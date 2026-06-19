@@ -1,12 +1,12 @@
 # Zugangsdaten Mirakel-Datenbank:
 MIRAKEL:
-    db_name: mirakel
-    db_port: 1521
-    db_user: ischotte
-    db_pwd: DaWoodyWoodz01!
-    db_hostname: dof1c1.dwd.de
-    db_hostname_alt: dlu1c1.dwd.de
-    db_service: mirakel.dwd.de
+    db_name: 
+    db_port: 
+    db_user: 
+    db_pwd: 
+    db_hostname: 
+    db_hostname_alt: 
+    db_service: 
     db_arraysize: 1000
     db_connection_string_raw: > 
         (DESCRIPTION =
