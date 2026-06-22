@@ -168,3 +168,150 @@ class DBConnector():
             print(f'FEHLER: Beim Datenbankabruf:')
             print(f'-> {e}')
             print(traceback.format_exc())
+
+
+
+# ======================================================================================
+# ======================================================================================
+# ======================================================================================
+
+
+
+class Mapper():
+
+    """
+    AUTOR:          Ilja Schotte 
+    AKTUALISIERT:   22.06.2026
+
+    BESCHREIBUNG:
+        Erstellt aus Punktdaten eine 2d-Karte eines bestimmten Areals.
+        Das Areal kann entweder als Ländername oder als ein Quadrat mit Hilfe von
+        Koordinaten definiert werden.
+        
+    ARGS:
+        data		[pd.DataFrame]	Die Daten müssen als pandas.DataFrame vorliegen.
+        col_values  [str]           Spaltenname des unter data übergebenen
+                                    pandas.DataFrames der die Werte beinhaltet.
+                                    (notwendig)
+                                    
+        col_lat     [str]           Spaltenname des unter data übergebenen
+                                    pandas.DataFrames der die Werte der geografischen
+                                    Breite der Messfunkte beinhaltet.
+                                    (notwendig)
+
+        col_lon     [str]           Spaltenname des unter data übergebenen
+                                    pandas.DataFrames der die Werte der geografischen
+                                    Länge der Messfunkte beinhaltet.
+                                    (notwendig)
+        
+        area        [str]           Nur Ländername oder "square". 
+                                    Gültige Ländernamen: 'germany'.
+                                    Defaultwert: 'germany'
+                                    (optional)
+
+        coords      [dict]          Ist area="square", dann muss unter coords ein
+                                    dictionary folgender Form geliefert werden:
+                                    {'NW': (lat[float], lon[float]),
+                                     'NE': (lat[float], lon[float]),
+                                     'SW': (lat[float], lon[float]),
+                                     'SE': (lat[float], lon[float])}
+
+                                    Die 4 Schlüssel liefern die geografischen Eckpunkte
+                                    'NW': northwest
+                                    'NE': northeast
+                                    'SW': southwest
+                                    'SE': southeast
+                                    des definierten Quadrats.
+
+        interpol    [str]           Wird interpol ein String übergeben, so definiert er
+                                    die Art der durchzuführenden Interpolation der unter
+                                    data übergebenen Punktwerte. Das Resultat ist eine
+                                    in die Fläche interpolierte Repräsentation der
+                                    Datenpunkte.       
+
+    RETURN:
+         
+    """
+
+    # Tuple der aktuell unterstützten Länder
+    supported_areas = ('germany', 'square')   
+
+    def __init__(self, 
+            data: pd.DataFrame,
+            col_values: str,
+            col_lat: str,
+            col_lon: str,
+            area: str,
+            coords: dict[
+                str, tuple[float, float], 
+                str, tuple[float, float], 
+                str, tuple[float, float], 
+                str, tuple[float, float]]
+                ={},
+            interpol: str=''):
+        
+
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError(
+                (
+                    f'Datensatz: "data" muss vom Typ <pandas.DataFrame> sein, '
+                    f'aktuell: {type(data)}')
+                )
+        
+        if data.empty:
+            raise Exception(f'Datensatz: "data" ist leer!')
+        
+        if area not in self.supported_areas:
+            raise ValueError(
+                (
+                    f'Gewählte Region: "area"={area} wird nicht unterstützt. '
+                    f'Aktuell unterstützte Regionen sind: {self.supported_areas}'
+                )
+            )
+
+        if area == 'square':
+            if not isinstance(coords, dict):
+                raise TypeError(
+                    (
+                        f'Die übergebenen Koordinaten "coords" müssen vom Typ <dict> sein, '
+                        f'aktuell: {type(coords)}'
+                    )
+                )
+            
+            if not coords:
+                raise ValueError(
+                    (
+                        f'Achtung! "area"="square" erfordert die Angabe eines Dictionary'
+                        f' "coords". Das Dictionary "coords" ist leer.'
+                    )
+                )
+
+        self._data = data
+        self._col_values = col_values
+        self._col_lat = col_lat
+        self._col_lon = col_lon
+        self._area = area
+        self._coords = coords
+
+
+    def show_parameters(self):
+
+        """
+            Zeigt die Argumente des Objekts.
+        """
+        try:
+            print(f"""
+            Datensatz:
+                Anzahl Messwerte:       {len(self._data.index)}
+                Spaltenname (values):   {self._col_values}
+                Spaltenname (lat.):     {self._col_lat}
+                Spaltenname (lon.):     {self._col_lon}
+            Region:                     {self._area}
+            Koordinaten:                {self._coords}
+            """)
+            
+            
+        except Exception as e:
+            print(f'FEHLER: Anzeige der Parameter.')
+            print(f'-> {e}')
+            print(traceback.format_exc())
