@@ -1,8 +1,30 @@
 
-
+import os
+import sys
 import sqlalchemy
 import traceback
+import inspect
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import LinearNDInterpolator
+
+# Umgebungsvariable für GDAL setzen:
+if "CONDA_PREFIX" in os.environ:
+    # Für Windows:
+    if sys.platform == "win32":
+        gdal_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "share", "gdal")
+    # Für Mac / Linux:
+    else:
+        gdal_path = os.path.join(os.environ["CONDA_PREFIX"], "share", "gdal")
+        
+    os.environ["GDAL_DATA"] = gdal_path
+
+import geopandas as gpd
+import rasterio.features
+from rasterio.transform import from_bounds
+
+
 
 
 
@@ -60,13 +82,13 @@ class DBConnector():
         
     # ========================================================================================================
     
-    def show_parameter(self):
+    def show_parameters(self):
     
         """
             Zeigt die Argumente zur Datenbankverbindung.
         """
         try:
-            print(f"""
+            print(inspect.cleandoc(f"""
             db_name:          {self._db_name}
             db_hostname:      {self._db_hostname}
             db_hostname_alt:  {self._db_hostname_alt}
@@ -75,7 +97,7 @@ class DBConnector():
             db_user:          {self._db_user}
             db_pwd:           {self._db_pwd}
             arraysize:        {self._db_arraysize}
-            """)
+            """))
             
             
         except Exception as e:
@@ -233,8 +255,11 @@ class Mapper():
          
     """
 
-    # Tuple der aktuell unterstützten Länder
-    supported_areas = ('germany', 'square')   
+    # Dictionary der aktuell unterstützten Länder
+    supported_areas = {
+        'germany': "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/master/2_bundeslaender/1_sehr_grob.geo.json", 
+        'square': None
+    }
 
     def __init__(self, 
             data: pd.DataFrame,
@@ -300,18 +325,19 @@ class Mapper():
             Zeigt die Argumente des Objekts.
         """
         try:
-            print(f"""
+            print(inspect.cleandoc(f"""
             Datensatz:
                 Anzahl Messwerte:       {len(self._data.index)}
                 Spaltenname (values):   {self._col_values}
                 Spaltenname (lat.):     {self._col_lat}
                 Spaltenname (lon.):     {self._col_lon}
             Region:                     {self._area}
-            Koordinaten:                {self._coords}
-            """)
+                Koordinaten:            {self._coords}
+            """))
             
             
         except Exception as e:
             print(f'FEHLER: Anzeige der Parameter.')
             print(f'-> {e}')
             print(traceback.format_exc())
+
